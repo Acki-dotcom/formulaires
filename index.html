@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Personal Brand ITW</title>
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--ink:#1c1b19;--mute:#6b6862;--line:#e2dfd8;--accent:#1f4fd8;--accent-ink:#fff;--active:#eef2ff;--ok:#1a7f4b}
+@media (prefers-color-scheme:dark){:root{--bg:#141413;--card:#1f1e1c;--ink:#f0eee8;--mute:#a09c93;--line:#34322e;--accent:#6c8cff;--accent-ink:#0b0b0b;--active:#1b2238;--ok:#4cc38a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:820px;margin:0 auto;padding:0 16px 120px}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:14px 0 10px;border-bottom:1px solid var(--line)}
+h1{font-size:22px;margin:0 0 2px}
+.sub{color:var(--mute);font-size:14px;margin:0}
+.bar{height:6px;background:var(--line);border-radius:3px;margin:10px 0 8px;overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select{font:inherit;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 12px;cursor:pointer}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button.rec{background:#d92d20;color:#fff;border-color:#d92d20;font-weight:600}
+button:disabled{opacity:.45;cursor:default}
+.status{font-size:13px;color:var(--mute);margin-left:auto}
+.section{margin:28px 0 10px}
+.section .tag{font-size:12px;letter-spacing:.08em;color:var(--accent);font-weight:700;text-transform:uppercase}
+.section h2{font-size:18px;margin:2px 0 0}
+.section p{margin:0;color:var(--mute);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:10px 0}
+.card.active{border-color:var(--accent);background:var(--active);box-shadow:0 0 0 2px var(--accent) inset}
+.card.done .num{background:var(--ok);color:#fff}
+.qrow{display:flex;gap:12px;align-items:flex-start}
+.num{flex:none;width:34px;height:34px;border-radius:50%;background:var(--line);display:grid;place-items:center;font-weight:700;font-size:14px}
+.card.active .num{background:var(--accent);color:var(--accent-ink)}
+.qtext{font-weight:650}
+.hint{color:var(--mute);font-size:14px}
+textarea{width:100%;min-height:84px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit;resize:vertical}
+.live{min-height:20px;font-size:13px;color:var(--accent);font-style:italic;margin-top:4px}
+.mini{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.mini button{font-size:13px;padding:5px 10px}
+.save{margin-top:36px;padding:18px;border:2px dashed var(--line);border-radius:12px;background:var(--card)}
+.save h2{margin:0 0 4px;font-size:18px}
+.save .row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+input{width:100%;padding:9px 10px;margin:8px 0 0;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+.opts{margin-top:10px;display:grid;gap:6px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:8px;cursor:pointer;background:var(--card)}
+.opt.sel{border-color:var(--accent);background:var(--active)}
+.opt b{width:20px;flex:none}
+.opt input{margin-top:5px}
+.en{color:var(--accent);font-size:14px;margin-top:4px;font-style:italic}
+.diag{font-size:12px;color:var(--mute);margin-top:6px;min-height:16px}
+.warn{background:#fff3cd;color:#664d03;padding:8px 12px;border-radius:8px;font-size:14px;margin:10px 0;display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <h1 id="title">Personal Brand ITW</h1>
+  <p class="sub" id="subtitle">Personal Branding: 20-Step Framework — by Ajay Singh (@ajaysinghdigital)</p>
+  <div class="bar"><i id="bar" style="width: 0%;"></i></div>
+  <div class="controls">
+    <button class="primary" id="btnStart">▶ Start the interview</button>
+    <button id="btnMic">🎤 Mic on</button>
+    <button id="btnPrev">◀ Prev</button>
+    <button id="btnNext">Next ▶</button>
+    <button id="btnRead">🔊 Read again</button>
+    <button id="btnStop">⏭ Skip reading</button>
+    <select id="selLang" title="Answer language (microphone)">
+      <option value="auto">Answer in: Auto (French + English)</option>
+      <option value="en-US">Answer in: English only</option>
+      <option value="fr-FR">Answer in: Français only</option>
+    </select>
+    <span class="status" id="status">0 answered</span>
+  </div>
+  <div class="diag" id="diag"></div>
+  <div class="warn" id="warn"></div>
+</header>
+
+<main id="form"></main>
+
+<section class="save" id="saveBox">
+  <h2>Save "<span id="saveTitle">Personal Brand ITW</span>"</h2>
+  <p class="sub">Answers are not kept after you reload or close the page. Download your copy first:</p>
+  <div class="row">
+    <button class="primary" id="saveTxt">⬇ TXT</button>
+    <button class="primary" id="saveHtml">⬇ HTML</button>
+    <button class="primary" id="saveJson">⬇ JSON</button>
+    <button id="btnClear">Clear all answers</button>
+  </div>
+</section>
+
+<section class="save" id="buildBox">
+  <h2>Create another interview</h2>
+  <p class="sub">Type a title, then one question per line. Start a line with # for a new section. Add || after a question to give it a short hint (optional). Then click the button: you get a ready-to-use file identical to this page, with your questions.</p>
+  <input id="bTitle" placeholder="Title of the new interview">
+  <input id="bSub" placeholder="Subtitle (optional)">
+  <textarea id="bText" style="min-height:200px">Section title || section subtitle
+# Section 1 || What this section is about
+First question? || Optional hint shown under the question
+Second question?
+# Section 2
+Third question? || Another hint</textarea>
+  <div class="row"><button class="primary" id="bGen">⬇ Generate the new interview file</button></div>
+  <div class="diag" id="bMsg"></div>
+</section>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIG — to create another form, only edit this block (title, sections,
+   questions, languages, voice command words). Nothing else needs to change.
+   ===================================================================== */
+const CONFIG = {
+  "id": "landing-page-efficace",
+  "title": "Landing Page Efficace — Interview",
+  "subtitle": "Choose A, B or C, or D to answer in your own words",
+  "micLang": "auto",
+  "voiceLang": "en-US",
+  "nextWords": [
+    "next",
+    "suivant"
+  ],
+  "autoAdvance": true,
+  "english": true,
+  "sections": [
+    {
+      "title": "Landing Page Efficace",
+      "subtitle": "Choisissez A, B ou C, ou D pour répondre avec vos propres mots",
+      "titleEn": "Effective landing page",
+      "subtitleEn": "Choose A, B or C, or D to answer in your own words",
+      "questions": [
+        {
+          "n": "01",
+          "q": "Quel est l'objectif principal de votre landing page?",
+          "hint": "Objectif",
+          "en": "What is the main goal of your landing page?",
+          "enHint": "",
+          "field": "main_goal",
+          "options": [
+            "Collecter des leads — email, prénom, numéro — via un formulaire court (3 champs max)",
+            "Vendre directement un produit ou service avec un bouton d'achat immédiat",
+            "Déclencher un appel ou une démo — le formulaire mène à un calendrier de réservation"
+          ],
+          "enOptions": [
+            "Collect leads: email, first name, phone number, through a short form (3 fields max)",
+            "Sell a product or service directly with an immediate buy button",
+            "Trigger a call or a demo: the form leads to a booking calendar"
+          ]
+        },
+        {
+          "n": "02",
+          "q": "À quel stade de maturité sont les visiteurs qui arrivent sur cette page?",
+          "hint": "Cible",
+          "en": "At what stage of maturity are the visitors who arrive on this page?",
+          "enHint": "",
+          "field": "audience_temperature",
+          "options": [
+            "Froids — ils découvrent la marque pour la première fois via une pub ou un contenu",
+            "Tièdes — ils ont déjà vu un post, un email ou un contenu mais n'ont pas encore agi",
+            "Chauds — ils cherchent activement une solution et comparent des options"
+          ],
+          "enOptions": [
+            "Cold: they discover the brand for the first time through an ad or a piece of content",
+            "Warm: they have already seen a post, an email or some content but have not acted yet",
+            "Hot: they are actively looking for a solution and comparing options"
+          ]
+        },
+        {
+          "n": "03",
+          "q": "Quel angle pour votre proposition de valeur principale?",
+          "hint": "Proposition de valeur",
+          "en": "Which angle for your main value proposition?",
+          "enHint": "",
+          "field": "value_prop_angle",
+          "options": [
+            "Résultat chiffré et mesurable — 'Doublez vos leads en 30 jours, garanti'",
+            "Transformation émotionnelle — avant/après, ce que le client ne veut plus vs ce qu'il veut",
+            "Méthode exclusive — une approche propriétaire que personne d'autre ne propose"
+          ],
+          "enOptions": [
+            "Measurable, numbered result: “Double your leads in 30 days, guaranteed”",
+            "Emotional transformation: before and after, what the customer no longer wants versus what they want",
+            "Exclusive method: a proprietary approach that nobody else offers"
+          ]
+        },
+        {
+          "n": "04",
+          "q": "Quel ton pour votre H1? (moins de 8 mots, centré sur le bénéfice client)",
+          "hint": "Headline",
+          "en": "Which tone for your H1? Under 8 words, focused on the customer benefit.",
+          "enHint": "",
+          "field": "headline_style",
+          "options": [
+            "Bénéfice direct — 'Générez 3x plus de leads sans augmenter votre budget'",
+            "Problème identifié — 'Votre trafic arrive mais n'achète pas? Voici pourquoi.'",
+            "Question provocatrice — 'Et si votre landing page vous coûtait des clients chaque jour?'"
+          ],
+          "enOptions": [
+            "Direct benefit: “Generate 3x more leads without increasing your budget”",
+            "Identified problem: “Your traffic arrives but does not buy? Here is why.”",
+            "Provocative question: “What if your landing page were costing you customers every day?”"
+          ]
+        },
+        {
+          "n": "05",
+          "q": "Quelle structure générale pour la page? (1 objectif = 1 structure)",
+          "hint": "Structure",
+          "en": "Which overall structure for the page? One goal, one structure.",
+          "enHint": "",
+          "field": "page_structure",
+          "options": [
+            "AIDA court — Accroche + 3 bénéfices + CTA unique. Rien de plus.",
+            "PAS long — Problème → Agitation → Solution → Preuves → Objections → CTA final",
+            "Storytelling — une narration en 5 étapes qui mène naturellement à l'offre"
+          ],
+          "enOptions": [
+            "Short AIDA: hook, 3 benefits and a single CTA. Nothing more.",
+            "Long PAS: Problem, Agitation, Solution, Proof, Objections, final CTA",
+            "Storytelling: a 5-step narrative that naturally leads to the offer"
+          ]
+        },
+        {
+          "n": "06",
+          "q": "Quel call-to-action principal? (un seul CTA par page, sinon le taux chute)",
+          "hint": "CTA",
+          "en": "Which main call to action? Only one CTA per page, otherwise the rate drops.",
+          "enHint": "",
+          "field": "cta_type",
+          "options": [
+            "Formulaire intégré dans la page — prénom + email uniquement, bouton visible sans scroller",
+            "Bouton unique vers une page de paiement ou d'inscription en un clic",
+            "Bouton 'Réserver un appel' qui ouvre directement un Calendly ou équivalent"
+          ],
+          "enOptions": [
+            "Form built into the page: first name and email only, button visible without scrolling",
+            "Single button to a payment or sign-up page in one click",
+            "“Book a call” button that opens a Calendly or equivalent directly"
+          ]
+        },
+        {
+          "n": "07",
+          "q": "Quelle preuve sociale met le plus en confiance votre cible?",
+          "hint": "Preuve sociale",
+          "en": "Which social proof builds the most trust with your target?",
+          "enHint": "",
+          "field": "social_proof",
+          "options": [
+            "Témoignages clients avec photo, prénom, entreprise et résultat précis chiffré",
+            "Logos de marques connues ou médias — 'Vu dans Forbes, Le Monde, BFM...'",
+            "Chiffres propriétaires — nombre de clients, taux de satisfaction, résultats agrégés"
+          ],
+          "enOptions": [
+            "Customer testimonials with photo, first name, company and a precise numbered result",
+            "Logos of well-known brands or media: “Seen in Forbes, Le Monde, BFM…”",
+            "Proprietary figures: number of customers, satisfaction rate, aggregated results"
+          ]
+        },
+        {
+          "n": "08",
+          "q": "Combien de champs dans votre formulaire? (3 champs = 25% conversion, 7 champs = 7%)",
+          "hint": "Formulaire",
+          "en": "How many fields in your form? 3 fields give 25% conversion, 7 fields give 7%.",
+          "enHint": "",
+          "field": "form_length",
+          "options": [
+            "1 champ — email uniquement. Friction minimale, volume maximum.",
+            "3 champs — prénom, email, nom d'entreprise. Le sweet spot prouvé.",
+            "5+ champs — je préfère moins de leads mais mieux qualifiés dès le formulaire"
+          ],
+          "enOptions": [
+            "1 field: email only. Minimal friction, maximum volume.",
+            "3 fields: first name, email, company name. The proven sweet spot.",
+            "5 or more fields: I prefer fewer but better-qualified leads from the form"
+          ]
+        },
+        {
+          "n": "09",
+          "q": "Comment traiter les hésitations avant le CTA final?",
+          "hint": "Objections",
+          "en": "How do you handle hesitations before the final CTA?",
+          "enHint": "",
+          "field": "objection_handling",
+          "options": [
+            "FAQ visible juste avant le bouton — répondre aux 5 vraies objections courantes",
+            "Garantie explicite — 'Satisfait ou remboursé 30 jours, sans question'",
+            "Section 'Pour qui / pour qui pas' — qualifier et rassurer les bons profils"
+          ],
+          "enOptions": [
+            "FAQ visible just before the button: answer the 5 real common objections",
+            "Explicit guarantee: “Satisfied or refunded for 30 days, no questions asked”",
+            "“Who it is for and who it is not for” section: qualify and reassure the right profiles"
+          ]
+        },
+        {
+          "n": "10",
+          "q": "82.9% du trafic vient du mobile en 2026. Quelle approche?",
+          "hint": "Mobile",
+          "en": "82.9% of traffic comes from mobile in 2026. Which approach?",
+          "enHint": "",
+          "field": "mobile_priority",
+          "options": [
+            "Mobile first absolu — tout est conçu pour le pouce, le desktop est secondaire",
+            "Desktop first — ma cible B2B consulte sur ordinateur avant de décider",
+            "Les deux simultanément — design responsive dès le départ, aucun compromis"
+          ],
+          "enOptions": [
+            "Absolute mobile first: everything is designed for the thumb, desktop is secondary",
+            "Desktop first: my B2B target browses on a computer before deciding",
+            "Both at once: responsive design from the start, no compromise"
+          ]
+        },
+        {
+          "n": "11",
+          "q": "Chaque seconde de chargement supplémentaire coûte 7% de conversions. Votre priorité?",
+          "hint": "Vitesse",
+          "en": "Each extra second of loading costs 7% of conversions. What is your priority?",
+          "enHint": "",
+          "field": "performance",
+          "options": [
+            "Page ultra-légère — pas de vidéo autoplay, images compressées, hébergement rapide",
+            "Vidéo de présentation — je sacrifie un peu de vitesse pour convaincre visuellement",
+            "Score Core Web Vitals 90+ — performance technique en priorité absolue"
+          ],
+          "enOptions": [
+            "Ultra-light page: no autoplay video, compressed images, fast hosting",
+            "Presentation video: I sacrifice a little speed to convince visually",
+            "Core Web Vitals score 90 or more: technical performance as the absolute priority"
+          ]
+        },
+        {
+          "n": "12",
+          "q": "D'où vient majoritairement votre trafic vers cette page?",
+          "hint": "Source de trafic",
+          "en": "Where does most of your traffic to this page come from?",
+          "enHint": "",
+          "field": "traffic_source",
+          "options": [
+            "Publicités payantes — Meta Ads, Google Ads, LinkedIn Ads",
+            "Contenu organique — réseaux sociaux, SEO, podcast, newsletter",
+            "Base existante — email list, partenaires, clients qui recommandent"
+          ],
+          "enOptions": [
+            "Paid ads: Meta Ads, Google Ads, LinkedIn Ads",
+            "Organic content: social networks, SEO, podcast, newsletter",
+            "Existing base: email list, partners, customers who recommend you"
+          ]
+        },
+        {
+          "n": "13",
+          "q": "Qu'est-ce qui doit apparaître sans scroller (above the fold)?",
+          "hint": "Above the fold",
+          "en": "What must appear without scrolling, above the fold?",
+          "enHint": "",
+          "field": "above_fold",
+          "options": [
+            "H1 + sous-titre bénéfice + formulaire ou CTA — tout ce qui convertit, immédiatement visible",
+            "H1 + vidéo de 60 secondes + bouton — la vidéo remplace le texte explicatif",
+            "H1 + visuel fort + sous-titre uniquement — l'action arrive après qu'on a scrollé"
+          ],
+          "enOptions": [
+            "H1, benefit subtitle and form or CTA: everything that converts, immediately visible",
+            "H1, 60-second video and button: the video replaces the explanatory text",
+            "H1, strong visual and subtitle only: the action comes after scrolling"
+          ]
+        },
+        {
+          "n": "14",
+          "q": "Quelle approche pour améliorer les performances dans le temps?",
+          "hint": "Test & optimisation",
+          "en": "Which approach to improve performance over time?",
+          "enHint": "",
+          "field": "testing_approach",
+          "options": [
+            "A/B test dès le lancement — tester le headline, puis le CTA, puis le formulaire (1 élément à la fois)",
+            "Appliquer les meilleures pratiques d'abord — A/B test seulement au-dessus de 1000 visiteurs/semaine",
+            "Heatmaps et recordings — observer où les gens s'arrêtent avant de tester quoi que ce soit"
+          ],
+          "enOptions": [
+            "A/B test from launch: test the headline, then the CTA, then the form, one element at a time",
+            "Apply best practices first: A/B test only above 1000 visitors a week",
+            "Heatmaps and recordings: observe where people stop before testing anything"
+          ]
+        },
+        {
+          "n": "15",
+          "q": "Que se passe-t-il immédiatement après que le visiteur convertit?",
+          "hint": "Après la conversion",
+          "en": "What happens immediately after the visitor converts?",
+          "enHint": "",
+          "field": "post_conversion",
+          "options": [
+            "Page de remerciement simple avec confirmation — 'Merci, on vous contacte sous 24h'",
+            "Upsell immédiat — une offre complémentaire apparaît pendant que l'intention est haute",
+            "Onboarding guidé — email automatique + prochaine étape claire dans les 5 minutes"
+          ],
+          "enOptions": [
+            "Simple thank-you page with confirmation: “Thank you, we will contact you within 24 hours”",
+            "Immediate upsell: a complementary offer appears while intent is high",
+            "Guided onboarding: automatic email plus a clear next step within 5 minutes"
+          ]
+        }
+      ]
+    }
+  ]
+};
+/* ===================================================================== */
+
+const $ = s => document.querySelector(s);
+const flat = [];
+CONFIG.sections.forEach((s, si) => s.questions.forEach(q => {
+  if (CONFIG.english && (q.en || s.titleEn)) {   /* English shown as the main text; French source is not displayed */
+    flat.push({ ...q, srcQ: q.q, q: q.en || q.q, hint: q.en ? (q.enHint || "") : q.hint, options: q.options && (q.enOptions || q.options), en: "", enHint: "", enOptions: null,
+      section: s.titleEn || s.title, sectionSub: s.subtitleEn || s.subtitle, sectionEn: "", sectionSubEn: "", si });
+  } else flat.push({ ...q, section: s.title, sectionSub: s.subtitle, sectionEn: s.titleEn, sectionSubEn: s.subtitleEn, si });
+}));
+const KEY = "itw:" + CONFIG.id;
+let answers = {};
+try { localStorage.removeItem(KEY); } catch (e) {}   /* every load starts with an empty form */
+const persist = () => {};
+
+let active = -1, micOn = false, speaking = false, rec = null, micLang = CONFIG.micLang;
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const TTS = window.speechSynthesis;
+
+/* ---------- render ---------- */
+$("#title").textContent = CONFIG.title;
+$("#saveTitle").textContent = CONFIG.title;
+$("#subtitle").textContent = CONFIG.subtitle;
+document.title = CONFIG.title;
+$("#selLang").value = micLang;
+
+
+const form = $("#form");
+let lastSi = -1;
+flat.forEach((q, i) => {
+  if (q.si !== lastSi) {
+    lastSi = q.si;
+    const h = document.createElement("div");
+    h.className = "section";
+    h.innerHTML = `<div class="tag">Section ${q.si + 1}</div><h2></h2><p></p>`;
+    h.querySelector("h2").textContent = q.section;
+    h.querySelector("p").textContent = q.sectionSub;
+    if (q.sectionEn || q.sectionSubEn) { const e = document.createElement("div"); e.className = "en"; e.textContent = "EN — " + [q.sectionEn, q.sectionSubEn].filter(Boolean).join(" — "); h.appendChild(e); }
+    form.appendChild(h);
+  }
+  const c = document.createElement("div");
+  c.className = "card"; c.id = "c" + i;
+  c.innerHTML = `<div class="qrow"><div class="num"></div><div><div class="qtext"></div><div class="hint"></div></div></div>
+    <textarea placeholder="Your answer… (type, or use the microphone and say “next”)"></textarea>
+    <div class="live"></div>
+    <div class="mini"><button data-a="read">🔊 Read</button><button data-a="mic">🎤 Answer here</button></div>`;
+  c.querySelector(".num").textContent = q.n;
+  c.querySelector(".qtext").textContent = q.q;
+  c.querySelector(".hint").textContent = q.hint;
+  if (q.en) { const e = document.createElement("div"); e.className = "en"; e.textContent = "EN — " + q.en + (q.enHint ? (/[.?!:]$/.test(q.en) ? " " : ". ") + q.enHint : ""); c.querySelector(".hint").parentNode.appendChild(e); }
+  const ta = c.querySelector("textarea");
+  ta.value = answers[i] || "";
+  ta.addEventListener("input", () => { if (q.options && ta.value.trim() && choices[i] !== "D") selectChoice(i, "D", true); else { commitQ(i); persist(); refresh(); } });
+  if (q.options) {
+    ta.placeholder = "D — your own answer: type here, or say D then speak (say “next” when finished)";
+    const box = document.createElement("div"); box.className = "opts";
+    q.options.map((t, k) => ["ABC"[k], t, q.enOptions && q.enOptions[k]]).concat([["D", "Your own answer: dictate it or type it in the box below", ""]]).forEach(([L, t, en]) => {
+      const lab = document.createElement("label"); lab.className = "opt"; lab.dataset.l = L;
+      lab.innerHTML = '<input type="radio" name="q' + i + '" value="' + L + '"><b>' + L + '</b><span></span>';
+      lab.querySelector("span").textContent = t + (en && en !== t ? "  —  EN: " + en : "");
+      lab.querySelector("input").addEventListener("change", () => selectChoice(i, L, false));
+      box.appendChild(lab);
+    });
+    ta.parentNode.insertBefore(box, ta);
+  }
+  ta.addEventListener("focus", () => { if (active !== i) setActive(i, false); });
+  c.addEventListener("click", e => {
+    const a = e.target.dataset && e.target.dataset.a;
+    if (a === "read") { setActive(i, true); }
+    if (a === "mic") { setActive(i, true, true); }
+  });
+  form.appendChild(c);
+});
+
+function refresh() {
+  let done = 0;
+  flat.forEach((_, i) => {
+    const has = (answers[i] || "").trim().length > 0;
+    if (has) done++;
+    $("#c" + i).classList.toggle("done", has);
+    $("#c" + i).classList.toggle("active", i === active);
+  });
+  $("#bar").style.width = (done / flat.length * 100) + "%";
+  $("#status").textContent = (active >= 0 ? "Question " + (active + 1) + " / " + flat.length + " · " : "") + done + " answered" + (micOn ? " · 🎤 listening" : "");
+  $("#btnMic").textContent = micOn ? "⏹ Mic off" : "🎤 Mic on";
+  $("#btnMic").classList.toggle("rec", micOn);
+}
+
+/* ---------- voice out (questions read aloud) ---------- */
+let speakId = 0, curDone = null;
+function speak(text, cb) {
+  if (!TTS) { cb && cb(); return; }
+  const id = ++speakId;
+  TTS.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = CONFIG.voiceLang;
+  const v = TTS.getVoices().find(v => v.lang && v.lang.toLowerCase().startsWith(CONFIG.voiceLang.slice(0, 2).toLowerCase()));
+  if (v) u.voice = v;
+  speaking = true; stopRec();
+  const done = () => { if (id !== speakId) return; curDone = null; speaking = false; resetBuf(); cb && cb(); };   /* a cancelled older voice never reopens the mic */
+  curDone = done;
+  u.onend = done; u.onerror = done;
+  TTS.speak(u);
+}
+function stopSpeaking() { if (!TTS || !curDone) return; const d = curDone; TTS.cancel(); d(); }
+
+/* ---------- voice in (answers via microphone) ---------- */
+let pending = "";
+const diag = t => { const d = $("#diag"); if (d) d.textContent = "Mic: " + t + " · language " + micLang; };
+function startSR() {
+  if (!SR || !micOn || speaking || rec) return;
+  const r = new SR();
+  rec = r;
+  r.lang = micLang === "auto" ? "en-US" : micLang; r.continuous = true; r.interimResults = true;
+  r.onresult = ev => {
+    let interim = "";
+    for (let k = ev.resultIndex; k < ev.results.length; k++) {
+      const res = ev.results[k], t = res[0].transcript;
+      if (res.isFinal) { pending = ""; handleFinal(t); } else interim += t;
+    }
+    if (interim) pending = interim;
+    const live = $("#c" + active + " .live");
+    if (live) live.textContent = interim ? "… " + interim : "";
+  };
+  r.onend = () => {
+    if (rec !== r) return;
+    rec = null;
+    if (pending) { const t = pending; pending = ""; handleFinal(t); }   /* keep what was heard before the browser cut the session */
+    diag("restarting");
+    if (micOn && !speaking) setTimeout(startSR, 0);                   /* restart at once: mic stays on until you stop it */
+  };
+  r.onerror = e => {
+    if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+      micOn = false; $("#warn").textContent = "Microphone blocked. Allow it in the browser address bar."; $("#warn").style.display = "block"; refresh();
+    }
+    diag("error " + e.error + " (auto-restart)");
+  };
+  r.onstart = () => diag("listening");
+  try { r.start(); } catch (e) { rec = null; setTimeout(startSR, 300); }
+}
+function stopSR() {
+  if (pending) { const t = pending; pending = ""; appendText(t); }
+  if (rec) { const r = rec; rec = null; r.onend = null; try { r.abort(); } catch (e) {} }
+}
+/* ---------- multiple choice: A, B, C from the list, D = dictate your own answer ---------- */
+const choices = {};
+function commitQ(i) {
+  const q = flat[i], ta = $("#c" + i + " textarea");
+  if (!q.options) { answers[i] = ta.value; return; }
+  const L = choices[i];
+  if (!L) answers[i] = "";
+  else if (L === "D") { const t = ta.value.trim(); answers[i] = t ? "D — " + t : "D"; }
+  else answers[i] = L + " — " + q.options["ABC".indexOf(L)];
+}
+function selectChoice(i, L, byVoice) {
+  choices[i] = L;
+  const c = $("#c" + i);
+  c.querySelectorAll(".opt").forEach(o => { const on = o.dataset.l === L; o.classList.toggle("sel", on); o.querySelector("input").checked = on; });
+  const ta = c.querySelector("textarea");
+  if (!byVoice && active !== i) { active = i; }
+  commitQ(i); persist(); refresh();
+  if (L === "D" && !byVoice) ta.focus({ preventScroll: true });
+}
+function parseLetter(text, strict) {
+  let t = (text || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z ]/g, " ").replace(/\s+/g, " ").trim();
+  const pre = /^(option|answer|choice|letter|reponse|choix|lettre|number)\s+/;
+  if (strict && !pre.test(t)) return null;
+  t = t.replace(pre, "").replace(/\s+(please|s il vous plait)$/, "");
+  const M = { a: "A", ah: "A", ay: "A", eh: "A", hey: "A", eight: "A", b: "B", be: "B", bee: "B", bay: "B", bea: "B", c: "C", see: "C", sea: "C", cee: "C", ce: "C", se: "C", si: "C",
+    d: "D", dee: "D", de: "D", day: "D", di: "D", dea: "D", dey: "D", the: "D", thee: "D", dear: "D", deep: "D", dd: "D" };
+  return M[t] || null;
+}
+function readText(i) {
+  const q = flat[i];
+  let t = q.say || (q.n.replace(/^0/, "") + ". " + (q.en || q.q) + " " + (q.en ? (q.enHint || "") : q.hint));
+  if (q.options) t += " " + (q.enOptions || q.options).map((x, k) => "Option " + "ABC"[k] + ": " + x + ".").join(" ") + " Option D: your own answer. Say D, then dictate it.";
+  return t;
+}
+function appendText(text, idx = active) {
+  if (idx < 0 || !text.trim()) return;
+  const ta = $("#c" + idx + " textarea");
+  ta.value = (ta.value.trim() ? ta.value.trim() + " " : "") + text.trim();
+  commitQ(idx); persist();
+}
+/* Tolerant "next" detection: "Next.", "Nexte", "Text" (misheard), "suivant", "question suivante", "next question" */
+const normW = w => (w || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/g, "");
+function lev(a, b) { const d = Array.from({ length: a.length + 1 }, (_, i) => [i]); for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return d[a.length][b.length]; }
+function splitNext(text) {
+  const toks = text.trim().split(/\s+/).filter(Boolean); if (!toks.length) return { text: "", next: false };
+  const targets = CONFIG.nextWords.map(normW).concat(["prochain", "prochaine", "nexte", "nex", "nekst", "necks", "nexst", "nextt"]);
+  let cut = 1, last = normW(toks[toks.length - 1]);
+  if ((last === "question" || last === "questions") && toks.length >= 2) { cut = 2; last = normW(toks[toks.length - 2]); }
+  if (cut === 1 && toks.length >= 2 && normW(toks[toks.length - 2]) === "question" && targets.some(t => t.length >= 4 && lev(last, t) <= 1)) cut = 2;
+  const exact = targets.includes(last);
+  const fuzzy = toks.length <= 3 && last.length >= 3 && targets.some(t => t.length >= 4 && lev(last, t) <= 1);
+  if (!(exact || fuzzy)) return { text: text.trim(), next: false };
+  return { text: toks.slice(0, toks.length - cut).join(" ").replace(/[\s,;:.!?-]+$/, "").trim(), next: true };
+}
+function handleFinal(text, idx = active) {
+  if (idx < 0) return;
+  const q = flat[idx];
+  const sp = splitNext(text); const goNext = sp.next; text = sp.text;
+  let picked = null;
+  if (q.options) {
+    const L = parseLetter(text, choices[idx] === "D");
+    if (L) { selectChoice(idx, L, true); picked = L; text = ""; }
+    else if (text.trim() && choices[idx] !== "D") selectChoice(idx, "D", true);
+  }
+  appendText(text, idx);
+  const lv = $("#c" + idx + " .live"); if (lv) lv.textContent = "";
+  refresh();
+  if (goNext && idx === active) go(1);
+  else if (picked && picked !== "D" && CONFIG.autoAdvance && idx === active) setTimeout(() => { if (active === idx) go(1); }, 900);
+}
+
+
+/* ---------- voice in: local Whisper model ----------
+   The microphone is opened ONCE (one permission prompt), stays open, and every
+   spoken sentence is transcribed locally. French and English can be mixed (Auto).
+   If the model cannot load, the page falls back to the browser speech engine. */
+let useSR = false, ready = false, asr = null, asrLoading = null;
+let stream = null, actx = null, proc = null, srcNode = null;
+let chunks = [], inSpeech = false, speechSec = 0, silenceSec = 0, totalSec = 0, queue = Promise.resolve();
+const THRESH = 0.01, END_SIL = 0.7, MAX_SEC = 25, MIN_SPEECH = 0.1;
+const LANGS = { "en-US": "english", "fr-FR": "french" };
+
+function resetBuf() { chunks = []; inSpeech = false; speechSec = silenceSec = totalSec = 0; }
+
+async function loadModel() {
+  if (asr) return asr;
+  if (!asrLoading) asrLoading = (async () => {
+    const { pipeline } = await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3");
+    const cb = p => { if (p.status === "progress" && p.progress != null) diag("downloading voice model " + Math.round(p.progress) + "% (first time only, please wait)"); };
+    const M = "onnx-community/whisper-base";
+    try { return await pipeline("automatic-speech-recognition", M, { device: "webgpu", dtype: { encoder_model: "fp32", decoder_model_merged: "q4" }, progress_callback: cb }); }
+    catch (e) { return await pipeline("automatic-speech-recognition", M, { dtype: "q8", progress_callback: cb }); }
+  })();
+  try { asr = await asrLoading; } finally { asrLoading = null; }
+  return asr;
+}
+
+async function ensureStream() {
+  if (stream && stream.active) return;
+  stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+  try { actx = new AudioContext({ sampleRate: 16000 }); } catch (e) { actx = new AudioContext(); }
+  srcNode = actx.createMediaStreamSource(stream);
+  proc = actx.createScriptProcessor(2048, 1, 1);
+  proc.onaudioprocess = onAudio;
+  srcNode.connect(proc); proc.connect(actx.destination);
+}
+
+function onAudio(e) {
+  if (!ready || !micOn || speaking) return;
+  const d = new Float32Array(e.inputBuffer.getChannelData(0));
+  let sum = 0; for (let i = 0; i < d.length; i++) sum += d[i] * d[i];
+  const rms = Math.sqrt(sum / d.length), dur = d.length / actx.sampleRate;
+  if (rms > THRESH) { if (!inSpeech) { inSpeech = true; const lv = $("#c" + active + " .live"); if (lv) lv.textContent = "🎤 …"; } silenceSec = 0; speechSec += dur; }
+  else if (inSpeech) silenceSec += dur;
+  chunks.push(d); totalSec += dur;
+  if (!inSpeech) { if (chunks.length > 3) chunks.shift(); totalSec = 0; return; }   /* keep a short lead-in before speech */
+  if (silenceSec >= END_SIL || totalSec >= MAX_SEC) flushAudio();
+}
+
+function flushAudio() {
+  const had = speechSec, parts = chunks, rate = actx ? actx.sampleRate : 16000, idx = active;
+  resetBuf();
+  if (had < MIN_SPEECH || !parts.length) return;
+  let n = 0; parts.forEach(c => n += c.length);
+  let audio = new Float32Array(n), o = 0; parts.forEach(c => { audio.set(c, o); o += c.length; });
+  if (rate !== 16000) { const r = rate / 16000, m = Math.floor(audio.length / r), out = new Float32Array(m); for (let i = 0; i < m; i++) out[i] = audio[Math.floor(i * r)]; audio = out; }
+  { const pad = new Float32Array(audio.length + 12800); pad.set(audio, 6400); audio = pad; }   /* 0.4 s of silence each side helps very short words */
+  const lv = $("#c" + idx + " .live"); if (lv) lv.textContent = "… transcribing";
+  queue = queue.then(async () => {
+    try {
+      const opts = { task: "transcribe" };
+      if (LANGS[micLang]) opts.language = LANGS[micLang];
+      const out = await asr(audio, opts);
+      const text = (out && out.text || "").trim();
+      if (lv) lv.textContent = "";
+      diag("listening · heard: “" + text + "”");
+      if (text && (had >= 0.6 || (splitNext(text).next && !splitNext(text).text) || (flat[idx].options && parseLetter(splitNext(text).text)))) handleFinal(text, idx);
+    } catch (e) { console.error(e); diag("transcription error: " + (e.message || e)); }
+  });
+}
+
+async function startRec() {
+  if (!micOn || speaking) return;
+  if (useSR) return startSR();
+  if (ready) return;
+  try {
+    diag("asking microphone permission (once)…");
+    await ensureStream();
+    if (actx.state === "suspended") await actx.resume();
+    if (!asr) { diag("loading voice model…"); await loadModel(); }
+    resetBuf(); ready = true; diag("listening (speak, pause, then say “next”)");
+  } catch (e) {
+    console.error(e);
+    if (e && (e.name === "NotAllowedError" || e.name === "SecurityError")) { micOn = false; refresh(); diag("microphone blocked: allow it in the browser address bar, then click Mic on"); return; }
+    if (SR) { useSR = true; diag("voice model unavailable (" + (e.message || e) + "), using the browser speech engine"); startSR(); }
+    else { micOn = false; refresh(); diag("voice model unavailable: " + (e.message || e)); }
+  }
+}
+function stopRec() {
+  if (useSR) { stopSR(); return; }
+  if (ready && inSpeech) flushAudio();
+  ready = false; resetBuf();
+}
+
+/* ---------- navigation ---------- */
+function setActive(i, read, forceMic) {
+  if (i < 0 || i >= flat.length) return;
+  active = i;
+  refresh();
+  $("#c" + i).scrollIntoView({ behavior: "smooth", block: "center" });
+  if (forceMic) micOn = true;
+  const after = () => { if (micOn) { refresh(); startRec(); } };
+  if (read) speak(readText(i), after);
+  else { stopRec(); after(); }
+}
+function go(d) {
+  const n = active + d;
+  if (n >= flat.length) { stopRec(); micOn = false; refresh(); $("#saveBox").scrollIntoView({ behavior: "smooth" }); speak("That was the last question. You can now save your interview."); return; }
+  if (n < 0) return;
+  setActive(n, true);
+}
+
+$("#btnStart").onclick = () => { micOn = true; setActive(Math.max(active, 0), true); };
+$("#btnMic").onclick = () => { micOn = !micOn; if (micOn) { if (active < 0) active = 0; refresh(); startRec(); } else { stopRec(); refresh(); } };
+$("#btnNext").onclick = () => go(1);
+$("#btnPrev").onclick = () => go(-1);
+$("#btnStop").onclick = () => { if (active < 0) active = 0; if (!micOn) { micOn = true; } stopSpeaking(); startRec(); refresh(); };
+$("#btnRead").onclick = () => { if (active < 0) active = 0; setActive(active, true); };
+$("#selLang").onchange = e => { micLang = e.target.value; if (useSR) { stopSR(); if (micOn) startSR(); } else diag(ready ? "listening" : "off"); };
+if (TTS) TTS.onvoiceschanged = () => {};
+
+/* ---------- save ---------- */
+const stamp = () => new Date().toISOString().slice(0, 10);
+const fname = ext => CONFIG.id + "-" + stamp() + "-01." + ext;
+function download(name, mime, content) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([content], { type: mime + ";charset=utf-8" }));
+  a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+/* If CONFIG.output exists, the answers are poured into it (tokens {{01}}, {{02}}...) to build the final files as one text. */
+function assemble() {
+  if (!CONFIG.output) return null;
+  const ans = {}; flat.forEach((q, i) => ans[q.n] = (answers[i] || "").trim());
+  return CONFIG.output.replace(/\{\{(\w+)\}\}/g, (m, k) => ans[k] || "").split("\n").filter(l => !/^-\s*$/.test(l.trim())).join("\n");
+}
+const data = () => ({
+  title: CONFIG.title, subtitle: CONFIG.subtitle, date: new Date().toISOString(), output: (typeof assemble === "function" ? assemble() : null),
+  answers: flat.map((q, i) => ({ number: q.n, section: q.section, question: q.q, hint: q.hint, answer: (answers[i] || "").trim(), choice: choices[i] || "", field: q.field || "" }))
+});
+$("#saveJson").onclick = () => download(fname("json"), "application/json", JSON.stringify(data(), null, 2));
+$("#saveTxt").onclick = () => {
+  const asm = assemble(); if (asm) { download(fname("txt"), "text/plain", asm + "\n"); return; }
+  const d = data(); let out = d.title + "\n" + d.subtitle + "\nDate: " + stamp() + "\n\n"; let sec = "";
+  d.answers.forEach(a => {
+    if (a.section !== sec) { sec = a.section; out += "\n=== " + sec + " ===\n\n"; }
+    out += a.number + " " + a.question + "\n" + (a.hint ? "(" + a.hint + ")\n" : "") + "> " + (a.answer || "—") + "\n\n";
+  });
+  download(fname("txt"), "text/plain", out);
+};
+$("#saveHtml").onclick = () => {
+  const d = data(); let body = "", sec = "";
+  d.answers.forEach(a => {
+    if (a.section !== sec) { sec = a.section; body += "<h2>" + esc(sec) + "</h2>"; }
+    body += "<div class='q'><b>" + esc(a.number) + " " + esc(a.question) + "</b><br><i>" + esc(a.hint) + "</i><p>" + (a.answer ? esc(a.answer).replace(/\n/g, "<br>") : "—") + "</p></div>";
+  });
+  const asm = assemble(); if (asm) body = "<pre>" + esc(asm) + "</pre>";
+  const html = "<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>" + esc(d.title) + "</title><style>body{font:16px/1.5 system-ui,sans-serif;max-width:780px;margin:0 auto;padding:24px;color:#1c1b19}h1{margin-bottom:0}h2{margin-top:28px;color:#1f4fd8;letter-spacing:.06em}.q{border-left:3px solid #1f4fd8;padding:4px 12px;margin:14px 0}.q p{margin:6px 0 0;white-space:pre-wrap}</style></head><body><h1>" + esc(d.title) + "</h1><p>" + esc(d.subtitle) + "<br>" + stamp() + "</p>" + body + "</body></html>";
+  download(fname("html"), "text/html", html);
+};
+$("#btnClear").onclick = () => {
+  if (!confirm("Clear all answers?")) return;
+  answers = {}; persist();
+  flat.forEach((q, i) => { $("#c" + i + " textarea").value = ""; delete choices[i]; if (q.options) { $("#c" + i).querySelectorAll(".opt").forEach(o => { o.classList.remove("sel"); o.querySelector("input").checked = false; }); } });
+  refresh();
+};
+
+/* ---------- create another interview (builds a new file from this page) ---------- */
+const slug = t => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "interview";
+$("#bText").value = $("#bText").value.replace(/^Section title \|\| section subtitle\n/, "");
+$("#bGen").onclick = () => {
+  const msg = $("#bMsg"), title = $("#bTitle").value.trim(), sub = $("#bSub").value.trim();
+  if (!title) { msg.textContent = "Please type a title first."; return; }
+  const sections = []; let cur = null, n = 0;
+  $("#bText").value.split(/\r?\n/).forEach(line => {
+    line = line.trim(); if (!line) return;
+    if (line[0] === "#") { const [t, st] = line.replace(/^#+\s*/, "").split("||").map(x => x.trim()); cur = { title: t, subtitle: st || "", questions: [] }; sections.push(cur); return; }
+    if (!cur) { cur = { title: "Questions", subtitle: "", questions: [] }; sections.push(cur); }
+    const [q, h] = line.split("||").map(x => x.trim()); n++;
+    cur.questions.push({ n: String(n).padStart(2, "0"), q, hint: h || "" });
+  });
+  if (!n) { msg.textContent = "Please type at least one question."; return; }
+  const cfg = { id: slug(title), title, subtitle: sub, micLang: "auto", voiceLang: CONFIG.voiceLang, nextWords: CONFIG.nextWords, autoAdvance: CONFIG.autoAdvance, sections };
+  const clone = document.documentElement.cloneNode(true);
+  clone.querySelector("#form").innerHTML = "";
+  clone.querySelector("#diag").textContent = ""; clone.querySelector("#bMsg").textContent = "";
+  const sc = Array.from(clone.querySelectorAll("script")).pop();
+  sc.textContent = sc.textContent.replace(/const CONFIG = \{[\s\S]*?\n\};\n/, () => "const CONFIG = " + JSON.stringify(cfg, null, 2) + ";\n");
+  download(cfg.id + "-" + stamp() + "-01.html", "text/html", "<!doctype html>\n" + clone.outerHTML);
+  msg.textContent = "Done: " + n + " questions, file " + cfg.id + "-" + stamp() + "-01.html downloaded.";
+};
+
+refresh();
+</script>
+
+
+</body></html>
